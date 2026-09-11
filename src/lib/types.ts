@@ -20,3 +20,11 @@ export const money = (cents: number) =>
   new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(
     cents / 100,
   );
+
+export type CheckoutOrder = {
+  id: string;
+  status: string;
+  expires_at: string;
+  stripe_session_id: string | null;
+  order_items: { name: string; unit_price_cents: number; quantity: number }[];
+};

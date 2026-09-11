@@ -20,6 +20,7 @@ export const checkoutSchema = z
 export const productSchema = z
   .object({
     id: z.uuid().optional(),
+    expected_stock: z.number().int().min(0).max(100000).optional(),
     name: z.string().trim().min(3).max(160),
     slug: z
       .string()
@@ -40,4 +41,7 @@ export const productSchema = z
       .record(z.string().max(60), z.string().max(250))
       .refine((d) => Object.keys(d).length <= 20),
   })
-  .strict();
+  .strict()
+  .refine((p) => !p.id || p.expected_stock !== undefined, {
+    message: "Reload this product before editing its inventory.",
+  });

@@ -11,4 +11,5 @@ coverage/
 .vercel
 
 *.tsbuildinfo
-supabase/.temp/
+.neon
+.env*.local

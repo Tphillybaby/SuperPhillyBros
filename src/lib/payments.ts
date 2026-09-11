@@ -1,6 +1,6 @@
 import "server-only";
 import Stripe from "stripe";
-import { serviceDatabase } from "./supabase/server";
+import { query, sql } from "./database";
 export function stripeClient() {
   if (!process.env.STRIPE_SECRET_KEY)
     throw new Error("Payments are not connected yet.");
@@ -14,26 +14,15 @@ export function storeOrigin() {
 export async function reconcileSession(session: Stripe.Checkout.Session) {
   const orderId = session.metadata?.order_id;
   if (!orderId) return;
-  const db = serviceDatabase();
   if (session.payment_status === "paid") {
-    const { error } = await db.rpc("complete_order", {
-      p_order_id: orderId,
-      p_session_id: session.id,
-      p_total: session.amount_total,
-      p_subtotal: session.amount_subtotal,
-      p_currency: session.currency,
-      p_email: session.customer_details?.email || null,
-      p_shipping: session.collected_information?.shipping_details || {},
-      p_payment_id:
-        typeof session.payment_intent === "string"
-          ? session.payment_intent
-          : session.payment_intent?.id || null,
-      p_tax: session.total_details?.amount_tax || 0,
-      p_shipping_cents: session.total_details?.amount_shipping || 0,
-    });
-    if (error) throw error;
+    const paymentId =
+      typeof session.payment_intent === "string"
+        ? session.payment_intent
+        : session.payment_intent?.id || null;
+    await query(
+      sql`select public.complete_order(${orderId}::uuid,${session.id},${session.amount_total}::integer,${session.amount_subtotal}::integer,${session.currency},${session.customer_details?.email || null},${JSON.stringify(session.collected_information?.shipping_details || {})}::jsonb,${paymentId},${session.total_details?.amount_tax || 0}::integer,${session.total_details?.amount_shipping || 0}::integer)`,
+    );
   } else if (session.status === "expired") {
-    const { error } = await db.rpc("release_order", { p_order_id: orderId });
-    if (error) throw error;
+    await query(sql`select public.release_order(${orderId}::uuid)`);
   }
 }

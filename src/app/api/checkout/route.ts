@@ -1,12 +1,14 @@
 import { NextResponse } from "next/server";
 import { createHash } from "node:crypto";
 import { checkoutSchema } from "@/lib/validation";
-import { serviceDatabase } from "@/lib/supabase/server";
+import { query, sql } from "@/lib/database";
+import type { CheckoutOrder } from "@/lib/types";
 import { storeOrigin, stripeClient } from "@/lib/payments";
 export const runtime = "nodejs";
 export async function POST(request: Request) {
   if (
-    !process.env.SUPABASE_SERVICE_ROLE_KEY ||
+    !process.env.DATABASE_URL ||
+    !process.env.CRON_SECRET ||
     !process.env.STRIPE_SECRET_KEY ||
     !process.env.STRIPE_WEBHOOK_SECRET ||
     process.env.STORE_LIVE !== "true"
@@ -50,27 +52,25 @@ export async function POST(request: Request) {
     const clientHash = createHash("sha256")
       .update(`${process.env.CRON_SECRET}:${ip}`)
       .digest("hex");
-    const db = serviceDatabase();
-    const { data: orderId, error } = await db.rpc("reserve_order", {
-      p_items: parsed.data.items,
-      p_request_id: parsed.data.requestId,
-      p_client_hash: clientHash,
-    });
-    if (error)
+    let orderId: string;
+    try {
+      const [reserved] = await query<{ id: string }>(
+        sql`select public.reserve_order(${JSON.stringify(parsed.data.items)}::jsonb,${parsed.data.requestId}::uuid,${clientHash}) as id`,
+      );
+      orderId = reserved.id;
+    } catch {
       return NextResponse.json(
         {
-          error: error.message.includes("Too many")
-            ? "Too many checkout attempts. Please wait a few minutes."
-            : "An item is no longer available in that quantity. Please refresh the store and update your bag.",
+          error:
+            "An item is no longer available in that quantity, or you have tried checkout too often. Refresh your bag and try again shortly.",
         },
         { status: 409 },
       );
-    const { data: order, error: readError } = await db
-      .from("orders")
-      .select("*, order_items(*)")
-      .eq("id", orderId)
-      .single();
-    if (readError || !order) throw new Error("Could not read order.");
+    }
+    const [order] = await query<CheckoutOrder>(
+      sql`select o.*, (select json_agg(i) from public.order_items i where i.order_id=o.id) as order_items from public.orders o where o.id=${orderId}`,
+    );
+    if (!order) throw new Error("Could not read order.");
     if (
       order.status !== "pending" ||
       new Date(order.expires_at).getTime() <= Date.now() + 1000
@@ -138,11 +138,9 @@ export async function POST(request: Request) {
       },
       { idempotencyKey: `checkout-${order.id}` },
     );
-    const { error: attachError } = await db.rpc("attach_checkout_session", {
-      p_order_id: order.id,
-      p_session_id: session.id,
-    });
-    if (attachError) throw attachError;
+    await query(
+      sql`select public.attach_checkout_session(${order.id}::uuid,${session.id})`,
+    );
     return NextResponse.json({ url: session.url });
   } catch (error) {
     console.error(

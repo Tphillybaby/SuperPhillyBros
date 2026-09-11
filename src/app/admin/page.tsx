@@ -1,5 +1,10 @@
-import { databaseConfigured, requireSeller } from "@/lib/supabase/server";
-import { AdminStudio, SellerLogin } from "@/components/admin-studio";
+import { databaseConfigured, query, sql } from "@/lib/database";
+import { requireSeller } from "@/lib/auth/server";
+import {
+  AdminStudio,
+  SellerLogin,
+  type Order,
+} from "@/components/admin-studio";
 import { demoProducts } from "@/lib/demo";
 import type { Product } from "@/lib/types";
 export const dynamic = "force-dynamic";
@@ -18,33 +23,28 @@ export default async function Admin() {
         live={false}
       />
     );
-  let seller;
+  let account;
   try {
-    seller = await requireSeller();
-  } catch {
-    return <SellerLogin />;
+    account = await requireSeller();
+  } catch (error) {
+    return <SellerLogin reason={(error as Error).message} />;
   }
   const [products, orders] = await Promise.all([
-    seller.db
-      .from("products")
-      .select("*")
-      .order("created_at", { ascending: false })
-      .limit(500),
-    seller.db
-      .from("orders")
-      .select("*, order_items(*)")
-      .order("created_at", { ascending: false })
-      .limit(200),
+    query<Product>(
+      sql`select * from public.products order by created_at desc limit 500`,
+    ),
+    query<Order>(
+      sql`select o.*, coalesce((select json_agg(i) from public.order_items i where i.order_id = o.id), '[]'::json) as order_items from public.orders o order by o.created_at desc limit 200`,
+    ),
   ]);
-  if (products.error || orders.error)
-    throw new Error("Could not load the seller studio.");
   return (
     <AdminStudio
-      products={products.data as Product[]}
-      orders={orders.data}
+      products={products}
+      orders={orders}
       demo={false}
-      email={seller.user.email || "Seller"}
+      email={account.user.email}
       live={process.env.STORE_LIVE === "true"}
+      isOwner={account.seller.is_owner}
     />
   );
 }

@@ -1,58 +1,64 @@
 "use server";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { requireSeller } from "@/lib/supabase/server";
+import { requireSeller } from "@/lib/auth/server";
+import { query, sql } from "@/lib/database";
 import { productSchema } from "@/lib/validation";
 export async function saveProduct(input: unknown) {
-  const { db } = await requireSeller();
-  const product = productSchema.parse(input);
-  const { id, ...fields } = product;
-  const result = id
-    ? await db
-        .from("products")
-        .update(fields)
-        .eq("id", id)
-        .select("id")
-        .single()
-    : await db.from("products").insert(fields).select("id").single();
-  if (result.error)
-    throw new Error(
-      result.error.code === "23505"
-        ? "That product URL is already in use. Choose a different name or slug."
-        : "The product could not be saved. Check its fields and try again.",
+  await requireSeller();
+  const p = productSchema.parse(input);
+  try {
+    const [result] = await query<{ id: string }>(
+      p.id
+        ? sql`update public.products set slug=${p.slug}, name=${p.name}, category=${p.category}, brand=${p.brand}, price_cents=${p.price_cents}, stock=${p.stock}, condition=${p.condition}, description=${p.description}, image_url=${p.image_url}, featured=${p.featured}, active=${p.active}, details=${JSON.stringify(p.details)}::jsonb where id=${p.id} and stock=${p.expected_stock} returning id`
+        : sql`insert into public.products (slug,name,category,brand,price_cents,stock,condition,description,image_url,featured,active,details) values (${p.slug},${p.name},${p.category},${p.brand},${p.price_cents},${p.stock},${p.condition},${p.description},${p.image_url},${p.featured},${p.active},${JSON.stringify(p.details)}::jsonb) returning id`,
     );
-  revalidatePath("/");
-  revalidatePath("/admin");
-  return { id: result.data.id };
+    if (!result) throw new Error("Product missing");
+    revalidatePath("/");
+    revalidatePath("/admin");
+    revalidatePath("/products", "layout");
+    return result;
+  } catch {
+    throw new Error(
+      "The product could not be saved. Reload the product if inventory changed, check its fields, and choose a unique product URL.",
+    );
+  }
 }
 export async function archiveProduct(id: string) {
-  const { db } = await requireSeller();
+  await requireSeller();
   z.uuid().parse(id);
-  const { error } = await db
-    .from("products")
-    .update({ active: false })
-    .eq("id", id);
-  if (error) throw new Error("Could not archive this product.");
+  await query(sql`update public.products set active=false where id=${id}`);
   revalidatePath("/");
   revalidatePath("/admin");
+  revalidatePath("/products", "layout");
 }
 export async function shipOrder(input: unknown) {
-  const values = z
+  await requireSeller();
+  const p = z
     .object({
       id: z.uuid(),
       tracking: z.string().trim().min(3).max(100),
       carrier: z.string().trim().min(2).max(50),
     })
     .parse(input);
-  const { db } = await requireSeller();
-  const { error } = await db.rpc("ship_order", {
-    p_order_id: values.id,
-    p_tracking: values.tracking,
-    p_carrier: values.carrier,
-  });
-  if (error)
+  try {
+    await query(
+      sql`select public.ship_order(${p.id}::uuid,${p.tracking},${p.carrier})`,
+    );
+  } catch {
     throw new Error(
       "Could not update shipment. Only paid orders can be shipped.",
     );
+  }
+  revalidatePath("/admin");
+}
+export async function addSeller(email: string) {
+  const { seller } = await requireSeller();
+  if (!seller.is_owner)
+    throw new Error("Only the store owner can add sellers.");
+  const value = z.email().max(254).parse(email.trim().toLowerCase());
+  await query(
+    sql`insert into public.sellers(email) values (${value}) on conflict (email) do nothing`,
+  );
   revalidatePath("/admin");
 }

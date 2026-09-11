@@ -62,26 +62,15 @@ test("listing validation rejects unsafe photo URLs and invalid money", () => {
 
 test("PostgreSQL migration, RLS and order lifecycle protect stock and payments", async (t) => {
   const db = new PGlite();
-  await db.exec(`create role anon; create role authenticated; create role service_role bypassrls;
-    create schema auth; create schema storage; create table auth.users(id uuid primary key);
-    create function auth.uid() returns uuid language sql stable as $$ select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid $$;
-    grant usage on schema auth, public to anon, authenticated, service_role;
-    grant execute on function auth.uid() to anon, authenticated, service_role;
-    create table storage.buckets(id text primary key,name text,public boolean,file_size_limit bigint,allowed_mime_types text[]);
-    create table storage.objects(id uuid primary key,bucket_id text); alter table storage.objects enable row level security;`);
   await db.exec(
-    readFileSync(
-      new URL("../supabase/migrations/202609110001_store.sql", import.meta.url),
-      "utf8",
-    ),
+    "create role visitor; grant usage on schema public to visitor;",
   );
-  const seller = randomUUID();
-  const buyer = randomUUID();
+  await db.exec(
+    readFileSync(new URL("../drizzle/0000_store.sql", import.meta.url), "utf8"),
+  );
   const product = randomUUID();
   const draft = randomUUID();
   const hash = "a".repeat(64);
-  await db.query("insert into auth.users values($1),($2)", [seller, buyer]);
-  await db.query("insert into public.sellers(user_id) values($1)", [seller]);
   await db.query(
     "insert into public.products(id,slug,name,category,price_cents,stock,condition,active) values($1,'red-car','Red car','Diecast',2500,1,'New',true),($2,'draft-car','Draft car','Diecast',4000,0,'New',false)",
     [product, draft],
@@ -101,38 +90,17 @@ test("PostgreSQL migration, RLS and order lifecycle protect stock and payments",
       )
     ).rows[0].id;
   await t.test(
-    "anonymous and ordinary accounts cannot access seller records or write inventory",
+    "unprivileged database users cannot read or mutate store data",
     async () => {
-      await db.exec("set role anon");
-      assert.equal(
-        (await db.query("select * from public.products")).rows.length,
-        1,
-      );
-      await assert.rejects(
-        db.query("select * from public.orders"),
-        /permission denied/,
-      );
+      await db.exec("set role visitor");
+      for (const table of ["products", "orders", "order_items", "sellers"])
+        await assert.rejects(
+          db.query(`select * from public.${table}`),
+          /permission denied/,
+        );
       await assert.rejects(reserve(randomUUID()), /permission denied/);
-      await db.exec("reset role");
-      await db.query("select set_config('request.jwt.claim.sub',$1,false)", [
-        buyer,
-      ]);
-      await db.exec("set role authenticated");
-      assert.equal(
-        (await db.query("select * from public.orders")).rows.length,
-        0,
-      );
-      assert.equal(
-        (
-          await db.query(
-            "update public.products set stock=99 where id=$1 returning id",
-            [product],
-          )
-        ).rows.length,
-        0,
-      );
       await assert.rejects(
-        db.query("insert into public.sellers(user_id) values($1)", [buyer]),
+        db.query("select public.ship_order($1,'12345','USPS')", [randomUUID()]),
         /permission denied/,
       );
       await db.exec("reset role");
@@ -213,23 +181,12 @@ test("PostgreSQL migration, RLS and order lifecycle protect stock and payments",
       );
     },
   );
-  await t.test("only sellers can ship paid orders", async () => {
-    await db.query("select set_config('request.jwt.claim.sub',$1,false)", [
-      buyer,
-    ]);
-    await db.exec("set role authenticated");
+  await t.test("server shipment calls only accept paid orders", async () => {
     await assert.rejects(
-      db.query("select public.ship_order($1,'123456789','USPS')", [order!]),
-      /Seller access required/,
-    );
-    await db.exec("reset role");
-    await db.query("select set_config('request.jwt.claim.sub',$1,false)", [
-      seller,
-    ]);
-    await db.exec("set role authenticated");
-    assert.equal(
-      (await db.query("select * from public.products")).rows.length,
-      2,
+      db.query("select public.ship_order($1,'123456789','USPS')", [
+        randomUUID(),
+      ]),
+      /Only paid orders/,
     );
     await db.query("select public.ship_order($1,'123456789','USPS')", [order!]);
     assert.equal(
@@ -241,7 +198,6 @@ test("PostgreSQL migration, RLS and order lifecycle protect stock and payments",
       ).rows[0].status,
       "shipped",
     );
-    await db.exec("reset role");
   });
   await t.test(
     "late payments after release require seller review",

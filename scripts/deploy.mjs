@@ -1,4 +1,5 @@
 import { spawnSync } from "node:child_process";
+import { existsSync, readFileSync, writeFileSync, chmodSync } from "node:fs";
 import { saveEnv } from "./env.mjs";
 import { randomBytes } from "node:crypto";
 function run(command, args, input) {
@@ -22,9 +23,9 @@ try {
     );
   if (process.env.STORE_LIVE === "true")
     for (const key of [
-      "NEXT_PUBLIC_SUPABASE_URL",
-      "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY",
-      "SUPABASE_SERVICE_ROLE_KEY",
+      "DATABASE_URL",
+      "NEON_AUTH_BASE_URL",
+      "NEON_AUTH_COOKIE_SECRET",
       "STRIPE_SECRET_KEY",
       "STRIPE_WEBHOOK_SECRET",
     ])
@@ -32,17 +33,30 @@ try {
   run("npm", ["run", "typecheck"]);
   run("npm", ["test"]);
   run("npm", ["run", "build"]);
-  run("vercel", [
-    "link",
-    "--yes",
-    "--project",
-    "super-philliy-bros-collectibles",
-  ]);
+  if (!existsSync(".vercel/project.json")) {
+    const localEnv = existsSync(".env.local")
+      ? readFileSync(".env.local")
+      : null;
+    try {
+      run("vercel", [
+        "link",
+        "--yes",
+        "--project",
+        "super-philliy-bros-collectibles",
+      ]);
+    } finally {
+      if (localEnv) {
+        writeFileSync(".env.local", localEnv);
+        chmodSync(".env.local", 0o600);
+      }
+    }
+  }
   const keys = [
     "NEXT_PUBLIC_SITE_URL",
-    "NEXT_PUBLIC_SUPABASE_URL",
-    "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY",
-    "SUPABASE_SERVICE_ROLE_KEY",
+    "DATABASE_URL",
+    "NEON_AUTH_BASE_URL",
+    "NEON_AUTH_COOKIE_SECRET",
+    "BLOB_READ_WRITE_TOKEN",
     "STRIPE_SECRET_KEY",
     "STRIPE_WEBHOOK_SECRET",
     "CRON_SECRET",

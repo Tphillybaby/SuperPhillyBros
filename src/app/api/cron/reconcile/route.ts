@@ -1,7 +1,7 @@
 import { timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
 import { reconcileSession, stripeClient } from "@/lib/payments";
-import { serviceDatabase } from "@/lib/supabase/server";
+import { query, sql } from "@/lib/database";
 export const runtime = "nodejs";
 export const maxDuration = 60;
 export async function GET(request: Request) {
@@ -13,19 +13,17 @@ export async function GET(request: Request) {
     !timingSafeEqual(Buffer.from(received), Buffer.from(expected))
   )
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  if (!process.env.SUPABASE_SERVICE_ROLE_KEY || !process.env.STRIPE_SECRET_KEY)
+  if (!process.env.DATABASE_URL || !process.env.STRIPE_SECRET_KEY)
     return NextResponse.json({ skipped: "Store setup is incomplete." });
   try {
-    const db = serviceDatabase();
     const stripe = stripeClient();
-    const { data: orders, error } = await db
-      .from("orders")
-      .select("id, stripe_session_id, expires_at")
-      .eq("status", "pending")
-      .lt("expires_at", new Date().toISOString())
-      .order("created_at")
-      .limit(100);
-    if (error) throw error;
+    const orders = await query<{
+      id: string;
+      stripe_session_id: string | null;
+      expires_at: string;
+    }>(
+      sql`select id,stripe_session_id,expires_at from public.orders where status='pending' and expires_at < now() order by created_at limit 100`,
+    );
     let processed = 0;
     for (const order of orders || []) {
       if (order.stripe_session_id) {
@@ -51,17 +49,12 @@ export async function GET(request: Request) {
           (s) => s.metadata?.order_id === order.id,
         );
         if (session) {
-          const { error: attachError } = await db.rpc(
-            "attach_checkout_session",
-            { p_order_id: order.id, p_session_id: session.id },
+          await query(
+            sql`select public.attach_checkout_session(${order.id}::uuid,${session.id})`,
           );
-          if (attachError) throw attachError;
           await reconcileSession(session);
         } else {
-          const { error: releaseError } = await db.rpc("release_order", {
-            p_order_id: order.id,
-          });
-          if (releaseError) throw releaseError;
+          await query(sql`select public.release_order(${order.id}::uuid)`);
         }
       }
       processed++;

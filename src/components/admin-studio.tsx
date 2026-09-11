@@ -19,10 +19,16 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { money, type Product } from "@/lib/types";
-import { browserDatabase } from "@/lib/supabase/client";
-import { archiveProduct, saveProduct, shipOrder } from "@/app/admin/actions";
+import { authClient } from "@/lib/auth/client";
+import { upload as uploadBlob } from "@vercel/blob/client";
+import {
+  archiveProduct,
+  saveProduct,
+  shipOrder,
+  addSeller,
+} from "@/app/admin/actions";
 import { Modal, ProductImage } from "./store";
-type Order = {
+export type Order = {
   id: string;
   status: string;
   total_cents: number | null;
@@ -60,32 +66,52 @@ const empty: Omit<Product, "created_at"> = {
   details: {},
 };
 
-export function SellerLogin() {
+export function SellerLogin({ reason = "" }: { reason?: string }) {
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [otp, setOtp] = useState("");
+  const [mode, setMode] = useState<"signin" | "signup" | "verify">("signin");
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  async function google() {
+    setBusy(true);
+    setError("");
+    const { error } = await authClient.signIn.social({
+      provider: "google",
+      callbackURL: "/admin",
+    });
+    if (error) {
+      setError(error.message || "Could not open Google sign-in.");
+      setBusy(false);
+    }
+  }
   async function login(e: FormEvent) {
     e.preventDefault();
     setBusy(true);
     setError("");
+    setMessage("");
     try {
-      const db = browserDatabase();
-      const { error } = await db.auth.signInWithOtp({
-        email,
-        options: {
-          shouldCreateUser: false,
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
-        },
-      });
-      if (error) throw error;
-      setMessage(
-        "Check your email for a secure sign-in link. Open it in this browser.",
-      );
-    } catch {
-      setError(
-        "We couldn’t send a sign-in link. Check that this email has been added as a seller, then try again.",
-      );
+      const result =
+        mode === "verify"
+          ? await authClient.emailOtp.verifyEmail({ email, otp })
+          : mode === "signup"
+            ? await authClient.signUp.email({ email, password, name: "Seller" })
+            : await authClient.signIn.email({ email, password });
+      if (result.error) {
+        if (result.error.code === "EMAIL_NOT_VERIFIED") {
+          setMode("verify");
+          setMessage("Enter the verification code sent to your email.");
+          return;
+        }
+        throw new Error(result.error.message || "Could not sign in.");
+      }
+      if (mode === "signup") {
+        setMode("verify");
+        setMessage("Enter the verification code sent to your email.");
+      } else window.location.assign("/admin");
+    } catch (e) {
+      setError((e as Error).message);
     } finally {
       setBusy(false);
     }
@@ -99,6 +125,17 @@ export function SellerLogin() {
           Sign in to manage the collection, keep an eye on stock, and get orders
           on their way.
         </p>
+        {reason && reason !== "Please sign in to the seller studio." && (
+          <p className="notice">{reason}</p>
+        )}
+        <button
+          className="button secondary full"
+          onClick={google}
+          disabled={busy}
+        >
+          Continue with Google <ArrowUpRight size={17} />
+        </button>
+        <p className="small muted">Or use your approved seller email.</p>
         <form onSubmit={login}>
           <label>
             Seller email
@@ -111,8 +148,40 @@ export function SellerLogin() {
               placeholder="you@example.com"
             />
           </label>
+          {mode === "verify" ? (
+            <label>
+              Verification code
+              <input
+                inputMode="numeric"
+                autoComplete="one-time-code"
+                required
+                value={otp}
+                onChange={(e) => setOtp(e.target.value)}
+              />
+            </label>
+          ) : (
+            <label>
+              Password
+              <input
+                type="password"
+                autoComplete={
+                  mode === "signup" ? "new-password" : "current-password"
+                }
+                minLength={8}
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+            </label>
+          )}
           <button className="button primary full" disabled={busy}>
-            {busy ? "Sending…" : "Email me a sign-in link"}
+            {busy
+              ? "Please wait…"
+              : mode === "signup"
+                ? "Create seller account"
+                : mode === "verify"
+                  ? "Verify email"
+                  : "Sign in"}
             <Mail size={17} />
           </button>
         </form>
@@ -126,7 +195,34 @@ export function SellerLogin() {
             {error}
           </p>
         )}
-        <p className="small muted">Access is limited to invited sellers.</p>
+        <button
+          className="button text"
+          type="button"
+          onClick={() => {
+            setMode(mode === "signin" ? "signup" : "signin");
+            setError("");
+            setMessage("");
+          }}
+        >
+          {mode === "signin"
+            ? "First visit? Create your seller account"
+            : "Back to sign in"}
+        </button>
+        {reason.includes("access") && (
+          <button
+            className="button text"
+            onClick={async () => {
+              await authClient.signOut();
+              window.location.assign("/admin");
+            }}
+          >
+            Use another account
+          </button>
+        )}
+        <p className="small muted">
+          Only approved sellers with verified email addresses can manage this
+          store.
+        </p>
       </div>
     </main>
   );
@@ -138,12 +234,14 @@ export function AdminStudio({
   demo,
   email,
   live,
+  isOwner = false,
 }: {
   products: Product[];
   orders: Order[];
   demo: boolean;
   email: string;
   live: boolean;
+  isOwner?: boolean;
 }) {
   const router = useRouter();
   const [tab, setTab] = useState("products");
@@ -172,7 +270,7 @@ export function AdminStudio({
   }
   async function signOut() {
     if (!demo) {
-      await browserDatabase().auth.signOut();
+      await authClient.signOut();
       router.refresh();
     }
   }
@@ -254,7 +352,7 @@ export function AdminStudio({
         </div>
         {demo && (
           <p className="notice">
-            You’re exploring a preview. Connect Supabase to save products,
+            You’re exploring a preview. Connect the store to save products,
             invite your brother, and manage real orders.
           </p>
         )}
@@ -458,7 +556,7 @@ export function AdminStudio({
               {
                 name: "Inventory & seller accounts",
                 detail:
-                  "Supabase stores your listings, photos, stock, and orders.",
+                  "Neon stores your listings, stock, and orders. Vercel Blob stores product photos.",
                 ready: !demo,
               },
               {
@@ -487,6 +585,43 @@ export function AdminStudio({
                 </span>
               </div>
             ))}
+            {isOwner && (
+              <form
+                onSubmit={async (e) => {
+                  e.preventDefault();
+                  const form = e.currentTarget;
+                  setBusy(true);
+                  setError("");
+                  try {
+                    await addSeller(
+                      String(new FormData(form).get("sellerEmail")),
+                    );
+                    setNotice(
+                      "Seller access added. They can sign in with that email; no invitation email was sent.",
+                    );
+                    form.reset();
+                  } catch (err) {
+                    setError((err as Error).message);
+                  } finally {
+                    setBusy(false);
+                  }
+                }}
+              >
+                <h3>Add your brother as a seller</h3>
+                <label>
+                  Email address
+                  <input
+                    name="sellerEmail"
+                    type="email"
+                    required
+                    placeholder="brother@example.com"
+                  />
+                </label>
+                <button className="button secondary" disabled={busy}>
+                  Add seller access
+                </button>
+              </form>
+            )}
             <p className="notice">
               Payments update orders and inventory automatically. You and your
               brother still choose what to list, pack sold items, and add
@@ -638,7 +773,7 @@ function ProductEditor({
   async function upload(file?: File) {
     if (!file) return;
     if (demo) {
-      setError("Connect Supabase before uploading your product photos.");
+      setError("Connect the store before uploading your product photos.");
       return;
     }
     if (
@@ -651,16 +786,12 @@ function ProductEditor({
     setUploading(true);
     setError("");
     try {
-      const db = browserDatabase();
-      const path = `${crypto.randomUUID()}.${file.type.split("/")[1]}`;
-      const { error } = await db.storage
-        .from("product-images")
-        .upload(path, file, { contentType: file.type, upsert: false });
-      if (error) throw error;
-      change(
-        "image_url",
-        db.storage.from("product-images").getPublicUrl(path).data.publicUrl,
-      );
+      const path = `products/${crypto.randomUUID()}.${file.type.split("/")[1]}`;
+      const blob = await uploadBlob(path, file, {
+        access: "public",
+        handleUploadUrl: "/api/uploads",
+      });
+      change("image_url", blob.url);
     } catch {
       setError("Photo upload failed. Please try again.");
     } finally {
@@ -672,7 +803,7 @@ function ProductEditor({
     setError("");
     if (demo) {
       setError(
-        "This is a preview. Connect Supabase to save your first real listing.",
+        "This is a preview. Connect the store to save your first real listing.",
       );
       return;
     }
@@ -688,6 +819,7 @@ function ProductEditor({
       delete (fields as Record<string, unknown>).created_at;
       delete (fields as Record<string, unknown>).updated_at;
       await saveProduct({
+        ...(id ? { expected_stock: initial.stock } : {}),
         ...fields,
         ...(id ? { id } : {}),
         price_cents: Math.round(Number(price) * 100),

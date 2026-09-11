@@ -1,30 +1,12 @@
-import { createServerClient } from "@supabase/ssr";
+import { getAuth } from "@/lib/auth/server";
 import { NextResponse, type NextRequest } from "next/server";
 export async function proxy(request: NextRequest) {
-  let response = NextResponse.next({ request });
-  if (
-    !process.env.NEXT_PUBLIC_SUPABASE_URL ||
-    !process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
-  )
-    return response;
-  const db = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
-    {
-      cookies: {
-        getAll: () => request.cookies.getAll(),
-        setAll: (values) => {
-          values.forEach(({ name, value }) => request.cookies.set(name, value));
-          response = NextResponse.next({ request });
-          values.forEach(({ name, value, options }) =>
-            response.cookies.set(name, value, options),
-          );
-        },
-      },
-    },
+  if (!process.env.NEON_AUTH_BASE_URL || !process.env.NEON_AUTH_COOKIE_SECRET)
+    return NextResponse.next();
+  const response = await getAuth().middleware({ loginUrl: "/auth/sign-in" })(
+    request,
   );
-  await db.auth.getClaims();
   response.headers.set("Cache-Control", "private, no-store");
   return response;
 }
-export const config = { matcher: ["/admin/:path*", "/auth/:path*"] };
+export const config = { matcher: ["/admin/:path*"] };

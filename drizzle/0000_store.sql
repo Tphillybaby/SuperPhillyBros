@@ -1,10 +1,10 @@
--- All stock values represent AVAILABLE units; pending orders hold their units.
+-- Server-only data access. No Data API or browser database credentials.
+-- Stock is AVAILABLE inventory; pending checkouts hold their units.
 create table public.sellers (
-  user_id uuid primary key references auth.users(id) on delete cascade,
-  display_name text not null default 'Seller',
+  email text primary key check (email = lower(trim(email))),
+  is_owner boolean not null default false,
   created_at timestamptz not null default now()
 );
-create function public.is_seller() returns boolean language sql stable security definer set search_path = '' as $$ select exists(select 1 from public.sellers where user_id = auth.uid()); $$;
 create table public.products (
   id uuid primary key default gen_random_uuid(), slug text unique not null check (slug ~ '^[a-z0-9]+(-[a-z0-9]+)*$'),
   name text not null check (length(name) between 3 and 160), category text not null check (category in ('Diecast', 'Pokémon')),
@@ -32,21 +32,6 @@ create index orders_pending on public.orders(expires_at) where status = 'pending
 create index orders_client on public.orders(client_hash, created_at);
 create index order_items_order on public.order_items(order_id);
 create index products_public on public.products(active, created_at desc);
-alter table public.sellers enable row level security;
-alter table public.products enable row level security;
-alter table public.orders enable row level security;
-alter table public.order_items enable row level security;
-create policy seller_self on public.sellers for select to authenticated using (user_id = auth.uid());
-create policy public_catalog on public.products for select to anon, authenticated using (active or public.is_seller());
-create policy seller_products_insert on public.products for insert to authenticated with check(public.is_seller());
-create policy seller_products_update on public.products for update to authenticated using(public.is_seller()) with check(public.is_seller());
-create policy seller_orders on public.orders for select to authenticated using(public.is_seller());
-create policy seller_order_items on public.order_items for select to authenticated using(public.is_seller());
-grant select on public.products to anon, authenticated;
-grant insert, update on public.products to authenticated;
-grant select on public.sellers, public.orders, public.order_items to authenticated;
-grant all on public.sellers, public.products, public.orders, public.order_items to service_role;
-
 create function public.reserve_order(p_items jsonb, p_request_id uuid, p_client_hash text) returns uuid language plpgsql security definer set search_path = '' as $$
 declare item jsonb; product public.products; existing public.orders; order_id uuid; subtotal bigint := 0; qty integer;
 begin
@@ -111,22 +96,20 @@ end; $$;
 
 create function public.ship_order(p_order_id uuid, p_tracking text, p_carrier text) returns void language plpgsql security definer set search_path = '' as $$
 begin
-  if not public.is_seller() then raise exception 'Seller access required'; end if;
   if length(trim(p_tracking)) not between 3 and 100 or length(trim(p_carrier)) not between 2 and 50 then raise exception 'Valid tracking and carrier required'; end if;
   update public.orders set status = 'shipped', tracking_number = trim(p_tracking), shipping_carrier = trim(p_carrier), shipped_at = coalesce(shipped_at, now()) where id = p_order_id and status in ('paid','shipped');
   if not found then raise exception 'Only paid orders may be shipped'; end if;
 end; $$;
 
-revoke all on function public.is_seller() from public;
-grant execute on function public.is_seller() to anon, authenticated, service_role;
-revoke all on function public.reserve_order(jsonb, uuid, text) from public, anon, authenticated;
-revoke all on function public.attach_checkout_session(uuid, text) from public, anon, authenticated;
-revoke all on function public.complete_order(uuid, text, integer, integer, text, text, jsonb, text, integer, integer) from public, anon, authenticated;
-revoke all on function public.release_order(uuid) from public, anon, authenticated;
-revoke all on function public.ship_order(uuid, text, text) from public, anon;
-grant execute on function public.reserve_order(jsonb, uuid, text), public.attach_checkout_session(uuid, text), public.complete_order(uuid, text, integer, integer, text, text, jsonb, text, integer, integer), public.release_order(uuid) to service_role;
-grant execute on function public.ship_order(uuid, text, text) to authenticated;
 
-insert into storage.buckets(id, name, public, file_size_limit, allowed_mime_types) values ('product-images','product-images',true,5242880,array['image/jpeg','image/png','image/webp']) on conflict (id) do nothing;
-create policy public_product_images on storage.objects for select to anon, authenticated using(bucket_id = 'product-images');
-create policy seller_image_upload on storage.objects for insert to authenticated with check(bucket_id = 'product-images' and public.is_seller());
+-- New database roles receive neither table access nor order function execution.
+alter table public.sellers enable row level security;
+alter table public.products enable row level security;
+alter table public.orders enable row level security;
+alter table public.order_items enable row level security;
+revoke all on public.sellers, public.products, public.orders, public.order_items from public;
+revoke all on function public.reserve_order(jsonb, uuid, text) from public;
+revoke all on function public.attach_checkout_session(uuid, text) from public;
+revoke all on function public.complete_order(uuid, text, integer, integer, text, text, jsonb, text, integer, integer) from public;
+revoke all on function public.release_order(uuid) from public;
+revoke all on function public.ship_order(uuid, text, text) from public;

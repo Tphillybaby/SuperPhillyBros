@@ -2,5 +2,7 @@
 !.env.example
 test-results/
 playwright-report/
-supabase/.temp/
 *.tsbuildinfo
+
+.neon
+.agents/
