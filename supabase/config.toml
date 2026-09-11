@@ -1,0 +1,14 @@
+project_id = "super-philliy-bros-collectibles"
+
+[db]
+major_version = 17
+
+[auth]
+enabled = true
+site_url = "http://localhost:3000"
+additional_redirect_urls = ["http://localhost:3000/auth/callback"]
+enable_signup = false
+
+[auth.email]
+enable_signup = false
+enable_confirmations = true
