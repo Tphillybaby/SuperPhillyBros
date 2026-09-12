@@ -294,20 +294,26 @@ export function Header() {
   return (
     <>
       <div className="announcement">
-        TWO BROTHERS. ONE SHARED OBSESSION.{" "}
-        <span>Welcome to the collection.</span>
+        <span className="announcement-star" aria-hidden="true">
+          ★
+        </span>{" "}
+        TWO BROTHERS. ONE SUPER COLLECTION.
+        <span>Philly roots. Collector hearts.</span>
       </div>
       <header className="header">
         <Link
           href="/"
           className="brand"
-          aria-label="Super Philliy Bro’s Collectibles home"
+          aria-label="Super Philly Bros Collectibles home"
         >
-          <span className="brand-mark">
-            SP<span>✦</span>
+          <span className="brand-mark" aria-hidden="true">
+            SP
           </span>
           <span className="brand-name">
-            Super Philliy Bro’s<small>COLLECTIBLES</small>
+            <span className="brand-super">Super</span>{" "}
+            <span className="brand-philly">Philly</span>{" "}
+            <span className="brand-bros">Bros</span>
+            <small>COLLECTIBLES · PHILADELPHIA</small>
           </span>
         </Link>
         <nav aria-label="Main navigation">
@@ -364,9 +370,9 @@ export function Footer() {
     <footer className="footer">
       <div>
         <Link href="/" className="footer-brand">
-          Super Philliy Bro’s<span>COLLECTIBLES</span>
+          Super Philly Bros<span>COLLECTIBLES</span>
         </Link>
-        <p>Good finds. Great company.</p>
+        <p>Thanks for playing. Keep on collecting.</p>
       </div>
       <div className="footer-links">
         <a href="/#collection">The collection</a>
@@ -376,9 +382,7 @@ export function Footer() {
         </Link>
       </div>
       <div className="footer-bottom">
-        <span>
-          © {new Date().getFullYear()} Super Philliy Bro’s Collectibles
-        </span>
+        <span>© {new Date().getFullYear()} Super Philly Bros Collectibles</span>
         <span>
           Independent collectors. Pokémon and other brands belong to their
           respective owners.

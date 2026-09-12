@@ -9,7 +9,7 @@ import { demoProducts } from "@/lib/demo";
 import type { Product } from "@/lib/types";
 export const dynamic = "force-dynamic";
 export const metadata = {
-  title: "Seller Studio | Super Philliy Bro’s",
+  title: "Seller Studio | Super Philly Bros",
   robots: { index: false, follow: false },
 };
 export default async function Admin() {

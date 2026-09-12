@@ -1,13 +1,16 @@
-@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;450;500;550;600;650;700&family=Manrope:wght@400;500;600;650;700;750;800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Bungee&family=DM+Sans:wght@400;450;500;550;600;650;700&family=Manrope:wght@400;500;600;650;700;750;800&display=swap");
 :root {
-  --ink: #152747;
-  --muted: #677080;
-  --lime: #d7f171;
-  --blue: #2455da;
-  --line: #e2e5e9;
-  --paper: #f4f5f6;
+  --ink: #182d4b;
+  --muted: #586374;
+  --lime: #ffcf3b;
+  --blue: #175cce;
+  --red: #ce342a;
+  --green: #247b46;
+  --sky: #bde9fa;
+  --line: #dedbd0;
+  --paper: #f7f4e9;
   --white: #fff;
-  --radius: 12px;
+  --radius: 4px;
 }
 * {
   box-sizing: border-box;
@@ -18,7 +21,7 @@ html {
 }
 body {
   margin: 0;
-  background: #fff;
+  background: #fffdf5;
   color: var(--ink);
   font-family: "DM Sans", sans-serif;
   font-size: 16px;

@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 560" fill="none">
+  <defs>
+    <g id="cloud" fill="#fffdf5"><path d="M0 24h16V8h24V0h32v8h24v16h16v24H0z"/><path d="M0 40h112v8H0z" fill="#92cde5"/></g>
+    <g id="coin"><path d="M8 0h20v6h8v36h-8v6H8v-6H0V6h8z" fill="#9b671c"/><path d="M8 0h16v6h8v30h-8v6H8v-6H0V6h8z" fill="#ffce35"/><path d="M8 6h6v30H8z" fill="#fff2a2"/><path d="M22 10h5v22h-5z" fill="#df951b"/></g>
+    <g id="spark" fill="#fffdf5"><path d="M8 0h8v8h8v8h-8v8H8v-8H0V8h8z"/></g>
+    <g id="star"><path d="M40 0h16v16h8v16h32v16H80v16h8v24H64V72H32v16H8V64h8V48H0V32h32V16h8z" fill="#182d4b"/><path d="M40 8h8v24h8v8h32v8H72v16h8v16H64V64H32v16H16V64h8V48H8v-8h32z" fill="#ffcf3b"/><path d="M40 40h5v16h-5zm15 0h5v16h-5z" fill="#182d4b"/><path d="M40 16h8v16h-8zM16 40h16v8H16z" fill="#fff2a2"/></g>
+    <pattern id="brick" width="64" height="48" patternUnits="userSpaceOnUse"><path fill="#a74d31" d="M0 0h64v48H0z"/><path fill="#e58954" d="M3 3h58v17H3zM3 27h26v17H3zM35 27h26v17H35z"/><path stroke="#612f29" stroke-width="4" d="M0 24h64M32 24v24M0 0v24M64 0v24"/><path stroke="#f4b176" stroke-width="3" d="M5 7h52M5 31h20m14 0h18"/></pattern>
+  </defs>
+  <!-- A block-built Philadelphia: Liberty Place, City Hall and rowhouses. -->
+  <g fill="#6cb8d4" opacity=".55">
+    <path d="M12 492V376h32v-24h32v140zm74 0V300h14v-16h18V150h8v134h18v16h14v192zm83 0V334h14v-24h12V218h6v92h18v24h16v158zm72 0V386h20v-24h34v-20h24v150zm91 0V376h24V263h12v-28h9v-40h10v40h9v28h12v113h25v116zm111 0V358h52v-18h22v152zm82 0V394h26v-22h34v120zm72 0V360h50v132zm66 0V404h35v-22h32v110z"/>
+    <path d="M0 483h760v77H0z"/>
+  </g>
+  <g fill="#bde9fa"><path d="M111 328h8v96h-8zm20 0h8v96h-8zm236-34h7v10h-7zm19 0h7v10h-7zm-19 23h7v10h-7zm19 0h7v10h-7z"/><path d="M360 374h44v8h-44zm-1 50h13v30h-13zm30 0h13v30h-13z"/></g>
+  <use href="#cloud" x="25" y="74"/>
+  <use href="#cloud" x="575" y="110" transform="translate(145 25) scale(.8)"/>
+  <use href="#cloud" x="308" y="15" transform="translate(108 6) scale(.7)"/>
+  <use href="#spark" x="218" y="77"/>
+  <use href="#spark" x="666" y="269"/>
+  <use href="#spark" x="38" y="281"/>
+  <use href="#coin" x="91" y="215"/>
+  <use href="#coin" x="149" y="186"/>
+  <use href="#coin" x="207" y="215"/>
+  <use href="#coin" x="646" y="380"/>
+  <!-- A collectible card, raised like a discovered power-up. -->
+  <g transform="translate(378 128) rotate(12 92 116)">
+    <rect x="26" y="-9" width="171" height="233" rx="5" fill="#175cce" stroke="#182d4b" stroke-width="5"/>
+    <path d="M42 7h137v197H42z" stroke="#84baff" stroke-width="3"/>
+  </g>
+  <g transform="translate(344 125) rotate(-10 92 116)">
+    <rect x="6" y="8" width="184" height="240" rx="5" fill="#182d4b" opacity=".17"/>
+    <rect width="184" height="240" rx="5" fill="#ffcf3b" stroke="#182d4b" stroke-width="5"/>
+    <path fill="#fff3bd" d="M9 9h166v12H9z"/>
+    <path fill="#fffdf5" stroke="#182d4b" stroke-width="3" d="M14 17h156v25H14z"/>
+    <path fill="#ce342a" d="M23 26h61v8H23z"/><path fill="#182d4b" d="M143 25h16v9h-16z"/>
+    <path fill="#2672ce" stroke="#182d4b" stroke-width="3" d="M14 52h156v128H14z"/>
+    <path fill="#4b92de" d="M17 55h31v25h28v27h31v29h31v41h-30v-25H79v-27H48V97H17zm108 0h42v42h-15V82h-27z"/>
+    <use href="#star" transform="translate(43 73) scale(1.03)"/>
+    <path fill="#182d4b" d="M16 193h112v6H16zm0 14h144v4H16zm0 12h90v4H16z"/>
+    <path fill="#ce342a" d="M147 191h14v12h-14z"/>
+  </g>
+  <!-- Brick platform and a little red diecast coupe. -->
+  <path fill="#182d4b" d="M31 424h294v66H31z"/>
+  <path fill="url(#brick)" d="M35 428h286v56H35z"/>
+  <g transform="translate(46 325)">
+    <path fill="#182d4b" opacity=".15" d="M9 83h261v12H9z"/>
+    <path fill="#182d4b" d="M12 41h39l30-34h89l40 30h43v10h18v35h-28v16h-36V82H75v16H39V82H5V48h7z"/>
+    <path fill="#e64d3a" d="M17 47h41L85 15h80l41 29h44v12h13v18H14V55h3z"/>
+    <path fill="#ad2926" d="M14 66h249v11H14z"/>
+    <path fill="#bde9fa" d="M89 21h29v23H68zm38 0h33l30 23h-63z"/>
+    <path fill="#fffdf5" d="M93 21h9L80 43H70zm45 0h8l25 23h-9z"/>
+    <path fill="#ffb190" d="M19 49h35v6H19zm52 0h124v5H71z"/>
+    <path fill="#fff4c9" d="M243 54h16v10h-16z"/><path fill="#ffcf3b" d="M15 56h9v10h-9z"/>
+    <path fill="#182d4b" d="M37 65h39v28H37zm171 0h37v28h-37z"/>
+    <path fill="#fffdf5" d="M45 71h22v17H45zm171 0h21v17h-21z"/>
+    <path fill="#74899d" d="M51 74h10v11H51zm171 0h9v11h-9z"/>
+    <path fill="#182d4b" d="M135 50h17v4h-17z"/>
+  </g>
+  <!-- A familiar green pipe with bright, stepped highlights. -->
+  <path fill="#182d4b" d="M458 423h145v137H458z"/>
+  <path fill="#258349" d="M464 429h133v131H464z"/>
+  <path fill="#62bd56" d="M470 429h32v131h-32z"/>
+  <path fill="#a6df74" d="M478 429h9v131h-9z"/>
+  <path fill="#165438" d="M577 429h20v131h-20z"/>
+  <path fill="#182d4b" d="M442 395h178v49H442z"/>
+  <path fill="#40a552" d="M448 401h166v36H448z"/>
+  <path fill="#8cdb69" d="M454 407h151v8H454zm0 8h27v16h-27z"/>
+  <path fill="#1d6d41" d="M591 415h23v22h-23z"/>
+  <!-- A golden question block and a small end-of-level flag. -->
+  <g transform="translate(267 239)">
+    <path fill="#182d4b" d="M0 0h68v68H0z"/>
+    <path fill="#ffcf3b" d="M5 5h58v58H5z"/>
+    <path fill="#fff2a2" d="M5 5h58v6H11v52H5z"/>
+    <path fill="#c78b23" d="M57 11h6v52H11v-6h46z"/>
+    <path fill="#182d4b" d="M21 15h24v6h6v17H39v8H29V32h12V25H29v6H19V21h2zm8 36h10v8H29zM10 13h4v4h-4zm44 37h4v4h-4z"/>
+  </g>
+  <path fill="#182d4b" d="M701 340h6v220h-6z"/>
+  <path fill="#ce342a" d="M707 347h47v36h-47z"/>
+  <path fill="#fffdf5" d="M722 355h16v5h5v10h-5v5h-16v-5h-5v-10h5z"/>
+  <path fill="#ffcf3b" stroke="#182d4b" stroke-width="3" d="M697 330h14v14h-14z"/>
+  <g fill="#378c4e" stroke="#182d4b" stroke-width="4"><path d="M6 560v-32h18v-17h24v17h24v-26h27v17h22v41z"/><path d="M619 560v-21h17v-21h26v15h25v27z"/></g>
+</svg>

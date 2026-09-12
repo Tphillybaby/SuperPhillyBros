@@ -12,6 +12,8 @@ import {
   PackageCheck,
   HeartHandshake,
   Sparkles,
+  Gamepad2,
+  Star,
   X,
 } from "lucide-react";
 import { money, type Product } from "@/lib/types";
@@ -140,61 +142,80 @@ export default function Storefront({
       )}
       <section className="hero">
         <div className="hero-copy">
-          <div className="eyebrow">
-            <span className="tiny-star">✦</span> COLLECTED WITH CHARACTER
+          <div className="eyebrow hero-eyebrow">
+            <Gamepad2 size={18} /> WELCOME TO WORLD 215
           </div>
-          <h1>
-            Your next
+          <h1 aria-label="Level up your collection.">
+            Level up
             <br />
-            great <em>find.</em>
+            <span className="hero-your">your</span>
+            <br />
+            <em>collection.</em>
           </h1>
           <p>
-            Diecast icons. Pokémon favorites.
-            <br />A little nostalgia, handpicked by two brothers.
+            Diecast legends. Pokémon treasures.
+            <br />
+            Big nostalgia, handpicked by two Philly brothers.
           </p>
           <button
             className="button primary"
             onClick={() => filter("All finds")}
           >
-            Explore the collection <ArrowUpRight size={19} />
+            <span aria-hidden="true">▶</span> Let’s-a shop!{" "}
+            <ArrowRight size={19} />
           </button>
           <div className="hero-footnote">
-            <span>01 /</span> FOR THE LOVE OF COLLECTING
+            <span>
+              <Star size={14} fill="currentColor" />
+            </span>{" "}
+            SMALL FINDS. SUPER FEELING.
           </div>
         </div>
         <div className="hero-art">
+          <div className="world-score" aria-hidden="true">
+            <span>
+              SUPER PHILLY BROS<strong>PLAYER 01 + 02</strong>
+            </span>
+            <span>
+              WORLD<strong>2–1–5</strong>
+            </span>
+          </div>
           <img
-            src="/collectibles-hero.png"
-            alt="Illustrative studio display of a red diecast car and trading cards"
+            src="/philly-world.svg"
+            alt="A retro platform-game world with a pixel-style Philly skyline, floating coins, a star trading card, a red collectible car, and a green pipe"
+            width={760}
+            height={560}
             fetchPriority="high"
           />
           <div className="art-label">
             <Sparkles size={17} />
             <span>
-              SMALL FINDS.
+              NEXT LEVEL NOSTALGIA.
               <br />
-              <strong>BIG COLLECTOR ENERGY.</strong>
+              <strong>NO EXTRA LIVES NEEDED.</strong>
             </span>
           </div>
-          <span className="hero-edition">THE SUPER PHILLIY COLLECTION</span>
+          <span className="hero-edition">PHILLY ROOTS. SUPER FINDS.</span>
         </div>
       </section>
       <div className="values-strip">
         <span>
-          <CarFront /> Small scale. Big personality.
+          <CarFront /> Small scale. Super character.
         </span>
         <span>
-          <Layers3 /> A new favorite for your binder.
+          <Layers3 /> Power up your binder.
         </span>
         <span>
-          <HeartHandshake /> From our collection to yours.
+          <HeartHandshake /> Two brothers. All heart.
         </span>
       </div>
       <section className="collection section" id="collection">
         <div className="section-heading">
-          <div className="eyebrow">THE COLLECTION</div>
+          <div className="eyebrow">
+            <span className="level-number">01</span> CHOOSE YOUR NEXT FIND
+          </div>
           <div className="heading-line">
-            <h2>A shelf full of possibilities.</h2>
+            <h2>The good stuff, unlocked.</h2>
             <span className="item-count">
               {products.length} finds to explore
             </span>
@@ -248,7 +269,7 @@ export default function Storefront({
           </div>
         </div>
         <div className="product-grid">
-          {visible.map((p, i) => (
+          {visible.map((p) => (
             <article className="product-card" key={p.id}>
               <button
                 className="product-preview"
@@ -323,11 +344,11 @@ export default function Storefront({
           onClick={() => filter("Diecast")}
         >
           <div>
-            <span className="eyebrow">BUILT FOR YOUR SHELF</span>
+            <span className="eyebrow">WORLD 01 · DIECAST</span>
             <h3>
-              The little things.
+              Small wheels.
               <br />
-              The legendary rides.
+              Super thrills.
             </h3>
             <span className="text-link">
               Shop diecast <ArrowRight size={17} />
@@ -340,10 +361,11 @@ export default function Storefront({
           onClick={() => filter("Pokémon")}
         >
           <div>
-            <span className="eyebrow">ONE MORE FOR THE BINDER</span>
+            <span className="eyebrow">WORLD 02 · POKÉMON</span>
             <h3>
-              Gotta love
-              <br />a good find.
+              Your next
+              <br />
+              power-up.
             </h3>
             <span className="text-link">
               Shop Pokémon <ArrowRight size={17} />
@@ -354,17 +376,25 @@ export default function Storefront({
       </section>
       <section className="our-story section" id="our-story">
         <div className="story-stamp">
-          SP<span>✦</span>
-          <small>BROTHERS & COLLECTORS</small>
+          <span className="story-star" aria-hidden="true">
+            ★
+          </span>
+          <strong>
+            2 PLAYER
+            <br />
+            ENERGY.
+          </strong>
+          <small>BROTHERS. COLLECTORS. PHILLY.</small>
         </div>
         <div>
-          <span className="eyebrow">THE PEOPLE BEHIND THE PICKS</span>
+          <span className="eyebrow">OUR FAVORITE CO-OP ADVENTURE</span>
           <h2>
             Two brothers.
-            <br />A lifelong kind of hobby.
+            <br />
+            One super collection.
           </h2>
           <p>
-            Super Philliy Bro’s Collectibles is our place to share the things we
+            Super Philly Bros Collectibles is our place to share the things we
             love collecting. From a miniature dream car to the next card in your
             collection, we’re here for that “found it” feeling, too.
           </p>

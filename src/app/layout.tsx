@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import { Footer, Header, StoreProvider } from "@/components/store";
 import "./globals.css";
+import "./platform-theme.css";
 export const metadata: Metadata = {
-  title: "Super Philliy Bro’s Collectibles | Diecast & Pokémon",
+  title: "Super Philly Bros Collectibles | Diecast & Pokémon",
   description:
-    "Explore diecast cars, Pokémon cards, and collectible finds from Super Philliy Bro’s Collectibles.",
+    "Level up your collection with diecast cars, Pokémon cards, and nostalgic finds from Super Philly Bros Collectibles.",
   icons: { icon: "/favicon.svg" },
 };
 export default function RootLayout({
