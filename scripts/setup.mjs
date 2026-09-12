@@ -4,7 +4,9 @@ import { Pool } from "pg";
 import Stripe from "stripe";
 import { saveEnv } from "./env.mjs";
 import { migrateStore } from "./migrate.mjs";
+import { configureSellerAccess, parseSellerEmails } from "./seller-access.mjs";
 async function main() {
+  const emails = parseSellerEmails(process.env.SELLER_EMAILS || "");
   // The requested bare neon.ts pulls Postgres only; restore Auth's independent setting.
   if (!process.env.NEON_AUTH_BASE_URL) {
     const status = JSON.parse(
@@ -23,22 +25,17 @@ async function main() {
       process.env.NEON_AUTH_COOKIE_SECRET || randomBytes(32).toString("hex"),
     STORE_LIVE: process.env.STORE_LIVE || "false",
   });
-  const emails = (process.env.SELLER_EMAILS || "")
-    .split(",")
-    .map((e) => e.trim().toLowerCase())
-    .filter(Boolean);
-  if (emails.some((e) => !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)))
-    throw new Error("SELLER_EMAILS must contain valid email addresses.");
   const pool = new Pool({
     connectionString: process.env.DATABASE_URL_UNPOOLED,
     max: 1,
   });
   try {
-    for (const [index, email] of emails.entries())
-      await pool.query(
-        "insert into public.sellers(email,is_owner) values($1,$2) on conflict(email) do nothing",
-        [email, index === 0],
-      );
+    const client = await pool.connect();
+    try {
+      await configureSellerAccess(client, emails.join(","));
+    } finally {
+      client.release();
+    }
   } finally {
     await pool.end();
   }

@@ -800,3 +800,62 @@
     flex-direction: row;
   }
 }
+
+.return-policy-notice {
+  padding: 12px 14px;
+  border-left: 4px solid var(--green);
+  background: #fff3c8;
+  font-size: 13px;
+  line-height: 1.6;
+  margin: 18px 0;
+}
+.return-policy-notice strong {
+  display: block;
+}
+.return-policy-notice a {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.policy-page {
+  max-width: 920px;
+  padding-block: 64px 80px;
+}
+.policy-page h1 {
+  font-family: var(--display);
+  font-weight: 400;
+  font-size: clamp(30px, 5vw, 48px);
+  margin: 20px 0 30px;
+}
+.policy-card {
+  border: 3px solid var(--ink);
+  box-shadow: 6px 6px var(--ink);
+  background: #fff3c8;
+  padding: clamp(24px, 5vw, 44px);
+  margin-bottom: 32px;
+}
+.policy-card h2 {
+  font-family: var(--display);
+  font-weight: 400;
+  font-size: clamp(23px, 3vw, 32px);
+  letter-spacing: -0.025em;
+}
+.policy-card p {
+  max-width: 620px;
+  margin-bottom: 0;
+}
+.policy-star {
+  display: inline-block;
+  color: var(--red);
+  font-size: 34px;
+  margin-bottom: 14px;
+}
+.login-card .account-setup-link {
+  box-shadow: none;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  font-size: 14px;
+  text-align: left;
+}

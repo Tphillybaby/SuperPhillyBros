@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { ReturnPolicyNotice } from "./return-policy-notice";
 import { ArrowLeft, Plus, PackageCheck } from "lucide-react";
 import { ProductImage, useCart } from "./store";
 import { money, type Product } from "@/lib/types";
@@ -43,6 +44,7 @@ export function ProductListing({
               ? `${product.stock} available${demo ? " in this example" : ""}`
               : "Sold out"}
           </p>
+          <ReturnPolicyNotice />
           <button
             className="button primary full"
             disabled={!product.stock}

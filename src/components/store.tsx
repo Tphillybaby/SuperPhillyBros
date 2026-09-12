@@ -8,6 +8,7 @@ import {
   type ReactNode,
 } from "react";
 import Link from "next/link";
+import { ReturnPolicyNotice } from "./return-policy-notice";
 import {
   ArrowRight,
   ShoppingBag,
@@ -257,6 +258,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
               Shipping and applicable tax are calculated at checkout.
               Availability is confirmed before payment.
             </p>
+            <ReturnPolicyNotice onNavigate={() => setOpen(false)} />
             {error && (
               <p className="notice error" role="alert">
                 {error}
@@ -298,7 +300,7 @@ export function Header() {
           ★
         </span>{" "}
         TWO BROTHERS. ONE SUPER COLLECTION.
-        <span>Philly roots. Collector hearts.</span>
+        <span>Ohio roots. Collector hearts.</span>
       </div>
       <header className="header">
         <Link
@@ -313,7 +315,7 @@ export function Header() {
             <span className="brand-super">Super</span>{" "}
             <span className="brand-philly">Philly</span>{" "}
             <span className="brand-bros">Bros</span>
-            <small>COLLECTIBLES · PHILADELPHIA</small>
+            <small>COLLECTIBLES · OHIO</small>
           </span>
         </Link>
         <nav aria-label="Main navigation">
@@ -377,6 +379,7 @@ export function Footer() {
       <div className="footer-links">
         <a href="/#collection">The collection</a>
         <a href="/#our-story">Meet the brothers</a>
+        <Link href="/returns">Return policy · All sales are final</Link>
         <Link href="/admin">
           Seller studio <ArrowUpRight size={14} />
         </Link>

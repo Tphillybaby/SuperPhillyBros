@@ -1,6 +1,6 @@
 # Super Philliy Bro’s Collectibles
 
-A Next.js store for two brothers selling diecast cars and Pokémon collectibles. Neon provides PostgreSQL and seller authentication, Vercel Blob stores product photos, Stripe handles hosted checkout, and Vercel hosts the site.
+An Ohio-based Next.js store for two brothers selling diecast cars and Pokémon collectibles. Neon provides PostgreSQL and seller authentication, Vercel Blob stores product photos, Stripe handles hosted checkout, and Vercel hosts the site.
 
 Store: https://super-philliy-bros-collectibles.vercel.app
 Seller studio: https://super-philliy-bros-collectibles.vercel.app/admin
@@ -15,9 +15,11 @@ The Neon CLI, project skills, and MCP configuration are installed. The CLI's ski
 
 ## Seller access
 
-Open the seller studio and select **Continue with Google**, using an approved email address. Email/password sign-in is also available; new accounts must verify their email. Authentication alone does not grant seller access: every protected page, product change, order update, and upload checks the server-side seller allowlist.
+Open the seller studio and sign in with an approved email address and password. Access is private to the two brothers. Public visitors cannot grant themselves seller access. The “Set up your approved account” form requires an allowlisted address and email verification; passwords are entered directly on the site, never shared in chat.
 
-The initial owner is configured from the private `SELLER_EMAILS` setup value. The owner can add the other brother's email under **Store setup → Add your brother as a seller**. This records access without sending an invitation email. The brother can then sign in with that address.
+`SELLER_EMAILS` privately configures the approved addresses (one during initial setup, at most two). `npm run setup` atomically replaces seller access with exactly that list; it does not delete authentication accounts or send email. The first address is the owner. The studio has no seller-invitation endpoint. Final email addresses will be supplied when the custom domain is chosen; the existing approved address remains unchanged until then.
+
+The storefront identifies the business as based in Ohio. “Super Philly Bros” is the store name. Its return policy is **All sales are final**, displayed on `/returns`, product details, and the shopping bag.
 
 Add a real product, upload its photo, set its price and available quantity, and publish it. Empty storefronts show explicitly labeled examples; those examples are never inserted into the real database. The decorative illustration is not a photograph of sellable inventory.
 

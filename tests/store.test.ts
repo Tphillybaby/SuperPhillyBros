@@ -4,6 +4,7 @@ import { readFileSync } from "node:fs";
 import { PGlite } from "@electric-sql/pglite";
 import { checkoutSchema, productSchema } from "../src/lib/validation";
 import { randomUUID } from "node:crypto";
+import { configureSellerAccess } from "../scripts/seller-access.mjs";
 
 test("checkout validation rejects price injection, duplicates and invalid quantities", () => {
   const id = randomUUID();
@@ -67,6 +68,35 @@ test("PostgreSQL migration, RLS and order lifecycle protect stock and payments",
   );
   await db.exec(
     readFileSync(new URL("../drizzle/0000_store.sql", import.meta.url), "utf8"),
+  );
+  await t.test(
+    "seller setup allows only the approved pair and rejects invalid replacements",
+    async () => {
+      await configureSellerAccess(db, "previous@example.com");
+      await configureSellerAccess(
+        db,
+        " Owner@example.com, brother@example.com, OWNER@example.com ",
+      );
+      const readSellers = async () =>
+        (
+          await db.query(
+            "select email,is_owner from public.sellers order by email",
+          )
+        ).rows;
+      const approved = await readSellers();
+      assert.deepEqual(approved, [
+        { email: "brother@example.com", is_owner: false },
+        { email: "owner@example.com", is_owner: true },
+      ]);
+      for (const invalid of [
+        "",
+        "not-an-email",
+        "owner@example.com,brother@example.com,third@example.com",
+      ]) {
+        await assert.rejects(configureSellerAccess(db, invalid));
+        assert.deepEqual(await readSellers(), approved);
+      }
+    },
   );
   const product = randomUUID();
   const draft = randomUUID();

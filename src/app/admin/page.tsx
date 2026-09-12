@@ -44,7 +44,6 @@ export default async function Admin() {
       demo={false}
       email={account.user.email}
       live={process.env.STORE_LIVE === "true"}
-      isOwner={account.seller.is_owner}
     />
   );
 }

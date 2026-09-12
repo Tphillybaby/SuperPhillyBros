@@ -5,7 +5,7 @@ import "./platform-theme.css";
 export const metadata: Metadata = {
   title: "Super Philly Bros Collectibles | Diecast & Pokémon",
   description:
-    "Level up your collection with diecast cars, Pokémon cards, and nostalgic finds from Super Philly Bros Collectibles.",
+    "Level up your collection with diecast cars, Pokémon cards, and nostalgic finds from Super Philly Bros Collectibles, based in Ohio.",
   icons: { icon: "/favicon.svg" },
 };
 export default function RootLayout({

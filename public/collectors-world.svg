@@ -6,12 +6,13 @@
     <g id="star"><path d="M40 0h16v16h8v16h32v16H80v16h8v24H64V72H32v16H8V64h8V48H0V32h32V16h8z" fill="#182d4b"/><path d="M40 8h8v24h8v8h32v8H72v16h8v16H64V64H32v16H16V64h8V48H8v-8h32z" fill="#ffcf3b"/><path d="M40 40h5v16h-5zm15 0h5v16h-5z" fill="#182d4b"/><path d="M40 16h8v16h-8zM16 40h16v8H16z" fill="#fff2a2"/></g>
     <pattern id="brick" width="64" height="48" patternUnits="userSpaceOnUse"><path fill="#a74d31" d="M0 0h64v48H0z"/><path fill="#e58954" d="M3 3h58v17H3zM3 27h26v17H3zM35 27h26v17H35z"/><path stroke="#612f29" stroke-width="4" d="M0 24h64M32 24v24M0 0v24M64 0v24"/><path stroke="#f4b176" stroke-width="3" d="M5 7h52M5 31h20m14 0h18"/></pattern>
   </defs>
-  <!-- A block-built Philadelphia: Liberty Place, City Hall and rowhouses. -->
+  <!-- A playful countryside backdrop for the Ohio-based brothers. -->
   <g fill="#6cb8d4" opacity=".55">
-    <path d="M12 492V376h32v-24h32v140zm74 0V300h14v-16h18V150h8v134h18v16h14v192zm83 0V334h14v-24h12V218h6v92h18v24h16v158zm72 0V386h20v-24h34v-20h24v150zm91 0V376h24V263h12v-28h9v-40h10v40h9v28h12v113h25v116zm111 0V358h52v-18h22v152zm82 0V394h26v-22h34v120zm72 0V360h50v132zm66 0V404h35v-22h32v110z"/>
-    <path d="M0 483h760v77H0z"/>
+    <path d="M0 560V452h34v-32h34v-36h36v-42h38v-26h42v26h38v42h36v36h34v32h38v108z"/>
+    <path d="M216 560V468h38v-34h38v-38h40v-42h44v-28h40v28h42v42h40v38h38v34h38v92z"/>
+    <path d="M480 560V472h36v-38h36v-42h38v-48h36v-30h38v30h36v48h30v42h30v126z"/>
   </g>
-  <g fill="#bde9fa"><path d="M111 328h8v96h-8zm20 0h8v96h-8zm236-34h7v10h-7zm19 0h7v10h-7zm-19 23h7v10h-7zm19 0h7v10h-7z"/><path d="M360 374h44v8h-44zm-1 50h13v30h-13zm30 0h13v30h-13z"/></g>
+  <g fill="#bde9fa" opacity=".65"><path d="M131 342h12v28h-12zm0 47h12v16h-12zm239-17h12v28h-12zm0 47h12v16h-12zm251-69h12v28h-12zm0 47h12v16h-12z"/></g>
   <use href="#cloud" x="25" y="74"/>
   <use href="#cloud" x="575" y="110" transform="translate(145 25) scale(.8)"/>
   <use href="#cloud" x="308" y="15" transform="translate(108 6) scale(.7)"/>

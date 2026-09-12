@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { ReturnPolicyNotice } from "./return-policy-notice";
 import { useEffect, useMemo, useState } from "react";
 import {
   ArrowRight,
@@ -143,7 +144,7 @@ export default function Storefront({
       <section className="hero">
         <div className="hero-copy">
           <div className="eyebrow hero-eyebrow">
-            <Gamepad2 size={18} /> WELCOME TO WORLD 215
+            <Gamepad2 size={18} /> OHIO BASED. COLLECTOR BUILT.
           </div>
           <h1 aria-label="Level up your collection.">
             Level up
@@ -155,7 +156,7 @@ export default function Storefront({
           <p>
             Diecast legends. Pokémon treasures.
             <br />
-            Big nostalgia, handpicked by two Philly brothers.
+            Big nostalgia, handpicked by two brothers in Ohio.
           </p>
           <button
             className="button primary"
@@ -177,12 +178,12 @@ export default function Storefront({
               SUPER PHILLY BROS<strong>PLAYER 01 + 02</strong>
             </span>
             <span>
-              WORLD<strong>2–1–5</strong>
+              HOME BASE<strong>OHIO</strong>
             </span>
           </div>
           <img
-            src="/philly-world.svg"
-            alt="A retro platform-game world with a pixel-style Philly skyline, floating coins, a star trading card, a red collectible car, and a green pipe"
+            src="/collectors-world.svg"
+            alt="A retro platform-game world with pixel-style hills, floating coins, a star trading card, a red collectible car, and a green pipe"
             width={760}
             height={560}
             fetchPriority="high"
@@ -195,7 +196,7 @@ export default function Storefront({
               <strong>NO EXTRA LIVES NEEDED.</strong>
             </span>
           </div>
-          <span className="hero-edition">PHILLY ROOTS. SUPER FINDS.</span>
+          <span className="hero-edition">OHIO ROOTS. SUPER FINDS.</span>
         </div>
       </section>
       <div className="values-strip">
@@ -384,7 +385,7 @@ export default function Storefront({
             <br />
             ENERGY.
           </strong>
-          <small>BROTHERS. COLLECTORS. PHILLY.</small>
+          <small>BROTHERS. COLLECTORS. OHIO.</small>
         </div>
         <div>
           <span className="eyebrow">OUR FAVORITE CO-OP ADVENTURE</span>
@@ -394,9 +395,10 @@ export default function Storefront({
             One super collection.
           </h2>
           <p>
-            Super Philly Bros Collectibles is our place to share the things we
-            love collecting. From a miniature dream car to the next card in your
-            collection, we’re here for that “found it” feeling, too.
+            Based in Ohio, Super Philly Bros Collectibles is our place to share
+            the things we love collecting. From a miniature dream car to the
+            next card in your collection, we’re here for that “found it”
+            feeling, too.
           </p>
           <a className="text-link" href="#collection">
             Find something that’s you <ArrowRight size={18} />
@@ -432,6 +434,7 @@ export default function Storefront({
                   ? `${selected.stock} available${demo ? " in this example" : ""}`
                   : "Sold out"}
               </p>
+              <ReturnPolicyNotice onNavigate={() => setSelected(null)} />
               <button
                 disabled={!selected.stock}
                 className="button primary full"

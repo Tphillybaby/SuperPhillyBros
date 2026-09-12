@@ -52,13 +52,3 @@ export async function shipOrder(input: unknown) {
   }
   revalidatePath("/admin");
 }
-export async function addSeller(email: string) {
-  const { seller } = await requireSeller();
-  if (!seller.is_owner)
-    throw new Error("Only the store owner can add sellers.");
-  const value = z.email().max(254).parse(email.trim().toLowerCase());
-  await query(
-    sql`insert into public.sellers(email) values (${value}) on conflict (email) do nothing`,
-  );
-  revalidatePath("/admin");
-}

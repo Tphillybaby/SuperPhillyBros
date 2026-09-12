@@ -21,12 +21,7 @@ import Link from "next/link";
 import { money, type Product } from "@/lib/types";
 import { authClient } from "@/lib/auth/client";
 import { upload as uploadBlob } from "@vercel/blob/client";
-import {
-  archiveProduct,
-  saveProduct,
-  shipOrder,
-  addSeller,
-} from "@/app/admin/actions";
+import { archiveProduct, saveProduct, shipOrder } from "@/app/admin/actions";
 import { Modal, ProductImage } from "./store";
 export type Order = {
   id: string;
@@ -74,18 +69,6 @@ export function SellerLogin({ reason = "" }: { reason?: string }) {
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
-  async function google() {
-    setBusy(true);
-    setError("");
-    const { error } = await authClient.signIn.social({
-      provider: "google",
-      callbackURL: "/admin",
-    });
-    if (error) {
-      setError(error.message || "Could not open Google sign-in.");
-      setBusy(false);
-    }
-  }
   async function login(e: FormEvent) {
     e.preventDefault();
     setBusy(true);
@@ -128,14 +111,10 @@ export function SellerLogin({ reason = "" }: { reason?: string }) {
         {reason && reason !== "Please sign in to the seller studio." && (
           <p className="notice">{reason}</p>
         )}
-        <button
-          className="button secondary full"
-          onClick={google}
-          disabled={busy}
-        >
-          Continue with Google <ArrowUpRight size={17} />
-        </button>
-        <p className="small muted">Or use your approved seller email.</p>
+        <p className="small muted">
+          Private access for the two brothers. Use your approved email and
+          password.
+        </p>
         <form onSubmit={login}>
           <label>
             Seller email
@@ -196,7 +175,7 @@ export function SellerLogin({ reason = "" }: { reason?: string }) {
           </p>
         )}
         <button
-          className="button text"
+          className="button text account-setup-link"
           type="button"
           onClick={() => {
             setMode(mode === "signin" ? "signup" : "signin");
@@ -205,7 +184,7 @@ export function SellerLogin({ reason = "" }: { reason?: string }) {
           }}
         >
           {mode === "signin"
-            ? "First visit? Create your seller account"
+            ? "Set up your approved account"
             : "Back to sign in"}
         </button>
         {reason.includes("access") && (
@@ -220,8 +199,8 @@ export function SellerLogin({ reason = "" }: { reason?: string }) {
           </button>
         )}
         <p className="small muted">
-          Only approved sellers with verified email addresses can manage this
-          store.
+          Only the brothers’ approved email addresses can access this studio.
+          Account setup requires email verification.
         </p>
       </div>
     </main>
@@ -234,14 +213,12 @@ export function AdminStudio({
   demo,
   email,
   live,
-  isOwner = false,
 }: {
   products: Product[];
   orders: Order[];
   demo: boolean;
   email: string;
   live: boolean;
-  isOwner?: boolean;
 }) {
   const router = useRouter();
   const [tab, setTab] = useState("products");
@@ -585,43 +562,15 @@ export function AdminStudio({
                 </span>
               </div>
             ))}
-            {isOwner && (
-              <form
-                onSubmit={async (e) => {
-                  e.preventDefault();
-                  const form = e.currentTarget;
-                  setBusy(true);
-                  setError("");
-                  try {
-                    await addSeller(
-                      String(new FormData(form).get("sellerEmail")),
-                    );
-                    setNotice(
-                      "Seller access added. They can sign in with that email; no invitation email was sent.",
-                    );
-                    form.reset();
-                  } catch (err) {
-                    setError((err as Error).message);
-                  } finally {
-                    setBusy(false);
-                  }
-                }}
-              >
-                <h3>Add your brother as a seller</h3>
-                <label>
-                  Email address
-                  <input
-                    name="sellerEmail"
-                    type="email"
-                    required
-                    placeholder="brother@example.com"
-                  />
-                </label>
-                <button className="button secondary" disabled={busy}>
-                  Add seller access
-                </button>
-              </form>
-            )}
+            <div className="setup-row">
+              <div>
+                <strong>Private seller access</strong>
+                <p>
+                  Reserved for the two brothers. Approved email addresses are
+                  managed during store setup.
+                </p>
+              </div>
+            </div>
             <p className="notice">
               Payments update orders and inventory automatically. You and your
               brother still choose what to list, pack sold items, and add
