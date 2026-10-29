@@ -4,6 +4,7 @@ import { checkoutSchema } from "@/lib/validation";
 import { query, sql } from "@/lib/database";
 import type { CheckoutOrder } from "@/lib/types";
 import { storeOrigin, stripeClient } from "@/lib/payments";
+import { getShippingCents } from "@/lib/shipping";
 export const runtime = "nodejs";
 export async function POST(request: Request) {
   if (
@@ -97,7 +98,7 @@ export async function POST(request: Request) {
         { status: 409 },
       );
     }
-    const shipping = Number(process.env.SHIPPING_FLAT_CENTS || "599");
+    const shipping = await getShippingCents();
     if (!Number.isSafeInteger(shipping) || shipping < 0 || shipping > 100000)
       throw new Error("Invalid shipping configuration.");
     const session = await stripe.checkout.sessions.create(

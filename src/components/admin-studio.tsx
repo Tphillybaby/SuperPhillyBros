@@ -23,6 +23,7 @@ import { authClient } from "@/lib/auth/client";
 import { upload as uploadBlob } from "@vercel/blob/client";
 import { archiveProduct, saveProduct, shipOrder } from "@/app/admin/actions";
 import { Modal, ProductImage } from "./store";
+import { ShippingSettings } from "./shipping-settings";
 export type Order = {
   id: string;
   status: string;
@@ -213,12 +214,14 @@ export function AdminStudio({
   demo,
   email,
   live,
+  shippingCents = 599,
 }: {
   products: Product[];
   orders: Order[];
   demo: boolean;
   email: string;
   live: boolean;
+  shippingCents?: number;
 }) {
   const router = useRouter();
   const [tab, setTab] = useState("products");
@@ -524,6 +527,7 @@ export function AdminStudio({
         ) : (
           <section className="studio-panel setup-panel">
             <h2>Store setup</h2>
+            <ShippingSettings initialCents={shippingCents} demo={demo} />
             {[
               {
                 name: "Storefront",
@@ -577,9 +581,9 @@ export function AdminStudio({
               shipment tracking.
             </p>
             <p className="small muted">
-              Shipping is configured by the store owner. Stripe can calculate
-              tax once its tax settings are configured. Customer payment
-              receipts are managed in Stripe.
+              Set your shipping price above. Stripe can calculate tax once its
+              tax settings are configured. Customer payment receipts are managed
+              in Stripe.
             </p>
           </section>
         )}

@@ -7,6 +7,7 @@ import {
 } from "@/components/admin-studio";
 import { demoProducts } from "@/lib/demo";
 import type { Product } from "@/lib/types";
+import { getShippingCents } from "@/lib/shipping";
 export const dynamic = "force-dynamic";
 export const metadata = {
   title: "Seller Studio | Super Philly Bros",
@@ -29,18 +30,20 @@ export default async function Admin() {
   } catch (error) {
     return <SellerLogin reason={(error as Error).message} />;
   }
-  const [products, orders] = await Promise.all([
+  const [products, orders, shipping] = await Promise.all([
     query<Product>(
       sql`select * from public.products order by created_at desc limit 500`,
     ),
     query<Order>(
       sql`select o.*, coalesce((select json_agg(i) from public.order_items i where i.order_id = o.id), '[]'::json) as order_items from public.orders o order by o.created_at desc limit 200`,
     ),
+    getShippingCents(),
   ]);
   return (
     <AdminStudio
       products={products}
       orders={orders}
+      shippingCents={shipping}
       demo={false}
       email={account.user.email}
       live={process.env.STORE_LIVE === "true"}
