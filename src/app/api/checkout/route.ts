@@ -5,6 +5,7 @@ import { query, sql } from "@/lib/database";
 import type { CheckoutOrder } from "@/lib/types";
 import { storeOrigin, stripeClient } from "@/lib/payments";
 import { getShippingCents } from "@/lib/shipping";
+import { combinedShipping } from "@/lib/shipping-rate";
 export const runtime = "nodejs";
 export async function POST(request: Request) {
   if (
@@ -98,7 +99,8 @@ export async function POST(request: Request) {
         { status: 409 },
       );
     }
-    const shipping = await getShippingCents();
+    const rates = await query<{ rate: string | null }>(sql`select p.details->>'Shipping (USD)' as rate from public.order_items i join public.products p on p.id=i.product_id where i.order_id=${order.id}`);
+    const shipping = combinedShipping(rates.map(r => r.rate ?? undefined), await getShippingCents());
     if (!Number.isSafeInteger(shipping) || shipping < 0 || shipping > 100000)
       throw new Error("Invalid shipping configuration.");
     const session = await stripe.checkout.sessions.create(

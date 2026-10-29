@@ -712,6 +712,7 @@ function ProductEditor({
   const [price, setPrice] = useState(
     initial.price_cents ? (initial.price_cents / 100).toFixed(2) : "",
   );
+  const [shippingPrice, setShippingPrice] = useState(initial.details["Shipping (USD)"] ?? "");
   const [detailText, setDetailText] = useState(
     Object.entries(initial.details)
       .map(([k, v]) => `${k}: ${v}`)
@@ -768,6 +769,8 @@ function ProductEditor({
         if (at < 1) throw new Error("Write each detail as Label: Value.");
         details[line.slice(0, at).trim()] = line.slice(at + 1).trim();
       }
+      if (shippingPrice.trim()) details["Shipping (USD)"] = shippingPrice.trim();
+      else delete details["Shipping (USD)"];
       const { id, ...fields } = product;
       delete (fields as Record<string, unknown>).created_at;
       delete (fields as Record<string, unknown>).updated_at;
@@ -843,6 +846,11 @@ function ProductEditor({
             value={price}
             onChange={(e) => setPrice(e.target.value)}
           />
+        </label>
+        <label>
+          Shipping price (USD)
+          <input type="number" min="0" max="1000" step="0.01" value={shippingPrice} onChange={e => setShippingPrice(e.target.value)} placeholder="Use store shipping rate" />
+          <small>Blank uses the store rate. Enter 0 for free shipping. Combined orders use the highest listing rate, charged once per order.</small>
         </label>
         <label>
           Available quantity
