@@ -4,6 +4,15 @@ import { z } from "zod";
 import { requireSeller } from "@/lib/auth/server";
 import { query, sql } from "@/lib/database";
 import { productSchema } from "@/lib/validation";
+import { setShippingRate } from "@/lib/shipping";
+
+export async function saveShippingRate(value: unknown) {
+  await requireSeller();
+  const cents = await setShippingRate(value);
+  revalidatePath("/admin");
+  return cents;
+}
+
 export async function saveProduct(input: unknown) {
   await requireSeller();
   const p = productSchema.parse(input);
