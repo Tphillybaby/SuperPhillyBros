@@ -32,3 +32,10 @@ test("shipping settings persist one rate, reject invalid cents, and deny public 
     await assert.rejects(db.exec("update public.shipping_settings set flat_cents=1"));
   } finally { await db.close(); }
 });
+
+test("combined shipping charges the highest listing rate once", async () => {
+  const { combinedShipping } = await import("../src/lib/shipping-rate");
+  assert.equal(combinedShipping(["4.99", "10.00"], 599), 1000);
+  assert.equal(combinedShipping(["0", "0"], 599), 0);
+  assert.equal(combinedShipping([undefined, "2.00"], 599), 599);
+});

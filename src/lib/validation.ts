@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { shippingCents } from "./shipping-rate";
 export const checkoutSchema = z
   .object({
     requestId: z.uuid(),
@@ -42,6 +43,10 @@ export const productSchema = z
       .refine((d) => Object.keys(d).length <= 20),
   })
   .strict()
+  .refine((p) => {
+    if (p.details["Shipping (USD)"] === undefined) return true;
+    try { shippingCents(p.details["Shipping (USD)"]); return true; } catch { return false; }
+  }, { message: "Enter a valid listing shipping price from $0 to $1,000." })
   .refine((p) => !p.id || p.expected_stock !== undefined, {
     message: "Reload this product before editing its inventory.",
   });

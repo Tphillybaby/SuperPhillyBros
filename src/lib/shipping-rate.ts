@@ -1,3 +1,7 @@
+export function combinedShipping(rates: (string | undefined)[], defaultCents: number): number {
+  return Math.max(0, ...rates.map(rate => rate === undefined ? defaultCents : shippingCents(rate)));
+}
+
 // Dollar input stays a string until it has been validated, then becomes cents.
 export function shippingCents(value: unknown): number {
   if (typeof value !== "string" || !/^\d{1,4}(\.\d{1,2})?$/.test(value.trim()))
