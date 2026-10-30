@@ -7,6 +7,7 @@ import {
 } from "@/components/admin-studio";
 import { demoProducts } from "@/lib/demo";
 import type { Product } from "@/lib/types";
+import { trackingEmailConfigured } from "@/lib/tracking-email";
 import { getShippingCents } from "@/lib/shipping";
 export const dynamic = "force-dynamic";
 export const metadata = {
@@ -44,6 +45,7 @@ export default async function Admin() {
       products={products}
       orders={orders}
       shippingCents={shipping}
+      emailReady={trackingEmailConfigured()}
       demo={false}
       email={account.user.email}
       live={process.env.STORE_LIVE === "true"}
