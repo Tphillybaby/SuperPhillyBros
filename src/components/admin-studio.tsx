@@ -215,6 +215,7 @@ export function AdminStudio({
   email,
   live,
   shippingCents = 599,
+  emailReady = false,
 }: {
   products: Product[];
   orders: Order[];
@@ -222,6 +223,7 @@ export function AdminStudio({
   email: string;
   live: boolean;
   shippingCents?: number;
+  emailReady?: boolean;
 }) {
   const router = useRouter();
   const [tab, setTab] = useState("products");
@@ -261,13 +263,13 @@ export function AdminStudio({
     setError("");
     const data = new FormData(e.currentTarget);
     try {
-      await shipOrder({
+      const result = await shipOrder({
         id: selected.id,
         tracking: data.get("tracking"),
         carrier: data.get("carrier"),
       });
       setSelected(null);
-      setNotice("Shipment saved. Tracking is recorded with the order.");
+      setNotice(result.message);
       router.refresh();
     } catch (e) {
       setError((e as Error).message);
@@ -527,6 +529,7 @@ export function AdminStudio({
         ) : (
           <section className="studio-panel setup-panel">
             <h2>Store setup</h2>
+            <p className="notice">Tracking emails: {emailReady ? "Connected. Saving shipment tracking emails the customer automatically." : "Not connected. Shipment tracking saves, but customer emails require an email service."}</p>
             <ShippingSettings initialCents={shippingCents} demo={demo} />
             {[
               {
@@ -682,7 +685,7 @@ export function AdminStudio({
                   />
                 </label>
                 <button className="button primary full" disabled={busy}>
-                  {busy ? "Saving…" : "Save tracking & mark shipped"}
+                  {busy ? "Saving…" : (emailReady ? "Save tracking, mark shipped & email customer" : "Save tracking & mark shipped")}
                 </button>
               </form>
             )}

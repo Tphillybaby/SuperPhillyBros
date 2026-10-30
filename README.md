@@ -63,3 +63,7 @@ npm run build
 ```
 
 The tests execute the actual PostgreSQL migration in PGlite: access restrictions, transaction rollback, overselling attempts, idempotent retries, amount checks, expiration, replayed fulfillment, shipment status, and late-payment review. The migration and two simultaneous reservations for the last unit were also verified on an isolated hosted Neon branch. Browser authentication and upload checks are performed separately; payment processing still requires Stripe credentials.
+
+## Customer tracking emails
+
+Set `RESEND_API_KEY` as a sensitive production environment variable and `SHIPPING_EMAIL_FROM` to a sender on a verified domain, then redeploy. Saving tracking on a paid/shipped order sends a plain-text notification to the email stored by Stripe at checkout. The seller sees whether the provider accepted the message, it was already sent, the service is missing, or sending failed. Re-saving retries failures. A private shipment-email receipt ledger prevents duplicate emails for the same order, recipient, carrier and tracking number; the provider idempotency key also protects immediate retries after a failed database commit. Corrected tracking produces a new notice. No historical orders are emailed automatically during deployment.

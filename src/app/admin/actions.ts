@@ -4,6 +4,7 @@ import { z } from "zod";
 import { requireSeller } from "@/lib/auth/server";
 import { query, sql } from "@/lib/database";
 import { productSchema } from "@/lib/validation";
+import { sendTrackingEmail } from "@/lib/tracking-email";
 import { setShippingRate } from "@/lib/shipping";
 
 export async function saveShippingRate(value: unknown) {
@@ -59,5 +60,7 @@ export async function shipOrder(input: unknown) {
       "Could not update shipment. Only paid orders can be shipped.",
     );
   }
+  const message = await sendTrackingEmail(p.id);
   revalidatePath("/admin");
+  return { message };
 }
